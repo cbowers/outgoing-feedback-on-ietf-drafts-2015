@@ -13,7 +13,7 @@ Expires: February 3, 2016                                  V. Choudhary
 
 Abstract
 
-   This document describes a data model for Routing Information Protocol
+   This document describes a data model for the Routing Information Protocol
    (RIP). Both RIP version 2 and RIPng are covered.
 
 Status of this Memo
@@ -83,7 +83,7 @@ Table of Contents
    Autonomous Systems (AS).
 
    This YANG model supports both RIP version 2 and RIPng. RIP version 2
-   defined in [RFC2453] supports IPv4. RIPng defined in [RFC2080]
+   (defined in [RFC2453]) supports IPv4. RIPng (defined in [RFC2080])
    supports IPv6.
 
 1.1. Terminology
@@ -112,6 +112,12 @@ Internet-Draft     draft-ietf-rtgwg-yang-rip-00.txt         August 2015
 
    This document defines the YANG module "ietf-rip", which has the
    following structure:
+   
+   *******
+   It would be useful to include a short key to the symbols 
+   like !,?,[], etc in the pyang tree output.  Or a reference to a 
+   description of these symbols.
+   *******
 
    module: ietf-rip
    augment /rt:routing/rt:routing-instance/rt:routing-protocols
@@ -127,7 +133,15 @@ Internet-Draft     draft-ietf-rtgwg-yang-rip-00.txt         August 2015
          +--rw distribute-list* [prefix-list-name direction]
          |  +--rw prefix-list-name    string
          |  +--rw direction           enumeration
-         |  +--rw if-name?            if:interface-ref
+         |  +--rw if-name?            if:interface-ref 
+********
+I see that the data model defines distribute-list as a way of defining 
+policy for filtering routes. I think it would be useful to include a 
+more complete data model for routing policy, either instead of or in 
+addition to distribute-list. One option is to import 
+draft-ietf-rtgwg-policy-model and use the apply-policy-group in the same 
+way that draft-ietf-isis-yang-isis-cfg uses it. 
+********
          +--rw timers
          |  +--rw update-interval?     uint16
          |  +--rw invalid-interval?    uint16
@@ -165,6 +179,11 @@ Internet-Draft     draft-ietf-rtgwg-yang-rip-00.txt         August 2015
             |              +--:(hmac-sha-512)
             |                 +--rw hmac-sha-512?   empty
             +--rw bfd?                       boolean {bfd}?
+************
+I think it would make sense to incorporate draft-ietf-bfd-yang in a 
+similar manner to how draft-ietf-ospf-yang and 
+draft-ietf-isis-yang-isis-cfg incorporate it. 
+************
             +--rw cost?                      uint8
             +--rw neighbors {neighbor-configuration}?
             |  +--rw neighbor* [address]
@@ -261,6 +280,22 @@ Internet-Draft     draft-ietf-rtgwg-yang-rip-00.txt         August 2015
          |        +--ro need-download-to-rib?   boolean
          |        +--ro inactive?               boolean
          |        +--ro next-hop-flags?         bits
+		 
+*********
+It does not seem to me that all of the route attributes under the 
+rip->ipv4->routes operational state really belong in this RIP data 
+model. For example, the need-flash and need-download-to-rib attributes 
+do not seem to be RIP specific. If they apply to route entries for other 
+protocols then perhaps they should be put in a separate yang module. 
+Regardless of where they end up, they need to be more clearly defined 
+than the existing definitions in the model. I think many of the route 
+attributes defined here should be removed from this RIP data model. 
+
+The same comment applies to flash-update-threshold and 
+next-flash-update. 
+
+********
+		 
          +--ro ipv6
          |  +--ro neighbors
          |  |  +--ro neighbor* [ipv6-address]
@@ -332,6 +367,7 @@ Internet-Draft     draft-ietf-rtgwg-yang-rip-00.txt         August 2015
      import ietf-key-chain {
        prefix "key-chain";
      }
+	 
 
      organization "TBD";
      contact "TBD";
@@ -803,6 +839,7 @@ Internet-Draft     draft-ietf-rtgwg-yang-rip-00.txt         August 2015
              description
                "Enable/disable bfd.";
            }
+
 
            leaf cost {
              type uint8 {
@@ -1316,6 +1353,12 @@ Internet-Draft     draft-ietf-rtgwg-yang-rip-00.txt         August 2015
          "Clears RIP routes from the IP routing table and routes
          redistributed into the RIP protocol for the specified RIP
          instance or for all RIP instances in the current context.";
+		 
+********
+It would be good to explain in this description how one clears all RIP
+instances.  Is is done by not passing the instance-name argument, or 
+is there a special argument like "all"?
+********
 
        input {
          leaf instance-name {
